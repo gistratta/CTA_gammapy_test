@@ -210,7 +210,7 @@ class PowerlawDecayTemporalModel(TemporalModel):
     """Temporal model with a power law decay.
 
     .. math::
-            F(t) = (t / t_ref)^(-decindex)
+            F(t) = (t / t_ref)^(decindex)
 
     Parameters
     ----------
@@ -222,7 +222,7 @@ class PowerlawDecayTemporalModel(TemporalModel):
 
     tag = ["PowerlawDecayTemporalModel"]
 
-    decindex = Parameter("decindex", "2", frozen=False)
+    decindex = Parameter("decindex", "-2", frozen=False)
 
     _t_ref_default = Time("2000-01-01")
     t_ref = Parameter("t_ref", _t_ref_default.mjd, unit="day", frozen=True)
@@ -231,7 +231,7 @@ class PowerlawDecayTemporalModel(TemporalModel):
     @staticmethod
     def evaluate(time, a, t_ref):
         """Evaluate at given times"""
-        return ( time  / t_ref)**(-decindex)
+        return ( time  / t_ref)**(decindex)
 
 
     def integral(self, t_min, t_max):
@@ -252,8 +252,8 @@ class PowerlawDecayTemporalModel(TemporalModel):
         pars = self.parameters
         decindex = pars["decindex"].quantity
         t_ref = Time(pars["t_ref"].quantity, format='mjd')
-        value = self.evaluate(t_max, decindex-1, t_ref) - self.evaluate(t_min, decindex-1, t_ref)
-        return (t_ref/(1.-decindex)) * value / self.time_sum(t_min, t_max)
+        value = self.evaluate(t_max, decindex+1, t_ref) - self.evaluate(t_min, decindex+1, t_ref)
+        return (t_ref/(1.+decindex)) * value / self.time_sum(t_min, t_max)
 
 
 class LightCurveTemplateTemporalModel(TemporalModel):
