@@ -217,22 +217,21 @@ class PowerlawDecayTemporalModel(TemporalModel):
     t_ref: `~astropy.units.Quantity`
         The reference time in mjd
     decindex: `~astropy.units.Quantity`
-        Power law index
+        Power law decay index
     """
 
     tag = ["PowerlawDecayTemporalModel"]
 
+    #t0 = Parameter("t0", "1 d", frozen=False)
     decindex = Parameter("decindex", "-2", frozen=False)
 
     _t_ref_default = Time("2000-01-01")
-    t_ref = Parameter("t_ref", _t_ref_default.mjd, unit="day", frozen=True)
-
+    t_ref = Parameter("t_ref", _t_ref_default.mjd, unit="day", frozen=False)
 
     @staticmethod
-    def evaluate(time, a, t_ref):
+    def evaluate(time, decindex, t_ref):
         """Evaluate at given times"""
-        return ( time  / t_ref)**(decindex)
-
+        return (time/t_ref)**decindex
 
     def integral(self, t_min, t_max):
         """Evaluate the integrated flux within the given time intervals
@@ -251,9 +250,10 @@ class PowerlawDecayTemporalModel(TemporalModel):
         """
         pars = self.parameters
         decindex = pars["decindex"].quantity
-        t_ref = Time(pars["t_ref"].quantity, format='mjd')
-        value = self.evaluate(t_max, decindex+1, t_ref) - self.evaluate(t_min, decindex+1, t_ref)
-        return (t_ref/(1.+decindex)) * value / self.time_sum(t_min, t_max)
+        t_ref = Time(pars["t_ref"].quantity, format="mjd")
+        dec1 = decindex+1.0
+        value = self.evaluate(t_max, dec1, t_ref) - self.evaluate(t_min, dec1, t_ref)
+        return (t_ref/dec1) * value / self.time_sum(t_min, t_max)
 
 
 class LightCurveTemplateTemporalModel(TemporalModel):
